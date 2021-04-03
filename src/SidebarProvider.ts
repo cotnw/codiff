@@ -1,5 +1,8 @@
 import * as vscode from "vscode";
 import { getNonce } from "./getNonce";
+import { authenticate } from "./authenticate";
+import { accessTokenKey } from "./constants";
+import { Util } from "./util";
 
 export class SidebarProvider implements vscode.WebviewViewProvider {
   _view?: vscode.WebviewView;
@@ -22,11 +25,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
     webviewView.webview.onDidReceiveMessage(async (data) => {
       switch (data.type) {
         case "auth": {
-          vscode.window.showInformationMessage("authenticated");
-          webviewView.webview.postMessage({
-              type: "username",
-              value: "sheldor1510"
-          })
+          authenticate();
+          break;
+        }
+        case "logout": {
+          await Util.context.globalState.update(accessTokenKey, "null");
+          vscode.commands.executeCommand("workbench.action.reloadWindow");
           break;
         }
       }
@@ -73,10 +77,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
         <link href="${styleMainUri}" rel="stylesheet">
         <script nonce="${nonce}">
           const tsvscode = acquireVsCodeApi();
-          const isAuthenticated = "true"
         </script>
 			</head>
       <body>
+        <p hidden id="token">${Util.getAccessToken()}</p>
         <div id="initial">
             <h1>CoDiff</h1>
             <p>tagline for codiff</p>
@@ -84,7 +88,10 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             <button id="authButton">login with GitHub</button>
         </div>
         <div id="postAuth">
-            <h1 id="usernameHeader">CoDiff</h1>
+            <img class="pfp" id="pfp" src=""/>
+            <h1 id="usernameHeader"></h1>
+            <br>
+            <button id="logoutButton">logout</button>
         </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>
 			</body>
