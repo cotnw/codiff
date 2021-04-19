@@ -1,6 +1,6 @@
 import * as path from "path";
 import * as vscode from "vscode";
-import { accessTokenKey } from "./constants";
+import { accessTokenKey, saveObjectKey } from "./constants";
 
 
 export class Util {
@@ -8,6 +8,10 @@ export class Util {
 
   static getAccessToken() {
     return this.context.globalState.get<string>(accessTokenKey) || "";
+  }
+
+  static getSaveObject() {
+    return this.context.globalState.get<object>(saveObjectKey) || {};
   }
 
   static isLoggedIn() {

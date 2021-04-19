@@ -66,6 +66,8 @@
   },
   "dependencies": {
     "@types/polka": "^0.5.2",
-    "polka": "^0.5.2"
+    "polka": "^0.5.2",
+    "socket.io-client": "^4.0.1",
+    "tmp": "^0.2.1"
   }
 }
