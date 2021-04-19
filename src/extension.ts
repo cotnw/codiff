@@ -20,10 +20,6 @@ export async function activate(context: vscode.ExtensionContext) {
 
 	console.log(Util.getSaveObject())
 
-	interface Dic {
-		[key: string]: [{}]
-	}
-
 	socket.on('save', async (message: { username: string; relativePath: string; code: string }) => {
 		var saveObj: {[key: string] : any} = Util.getSaveObject()
 		var keyWasFound = false
@@ -34,10 +30,9 @@ export async function activate(context: vscode.ExtensionContext) {
 				for(let i=0;i < fileSavesArray.length;i++) {
 					if(fileSavesArray[i]["username"] == message.username) {
 						fileSavesArray[i]["code"] = message.code
-					} else {
-						fileSavesArray.push({username: message.username, code: message.code})
-					}
+					} 
 				}
+				fileSavesArray.push({username: message.username, code: message.code})
 			} 
 		})
 		if(!keyWasFound) {
@@ -60,36 +55,47 @@ export async function activate(context: vscode.ExtensionContext) {
 				const rootPath = workspaceFolders[0].uri.path.substring(1).split('/').join("\\")
 				const relativePath = document.fileName.split(rootPath)[1].substring(1)
 				var saveObj: {[key: string] : any} = Util.getSaveObject()
-				var code = document.getText()	
-				var username = ""
+				var conflicts: Array<{code: any, username: any}> = []
 				var ext = '.' + relativePath.split(".")[1]
+
 				Object.keys(saveObj).forEach((key: string) => {
 					if(key == relativePath) {
-						const lengthOfFileSaves = saveObj[key].length
-						code = saveObj[key][lengthOfFileSaves-1]["code"]
-						username = saveObj[key][lengthOfFileSaves-1]["username"]
+						const fileSavesArray = saveObj[key]
+						for(let i=0;i < fileSavesArray.length;i++) {
+							const conflict: {code: any, username: any} = {
+								code: saveObj[key][i]["code"],
+								username: saveObj[key][i]["username"]
+							}
+							conflicts.push(conflict)
+						}
 					}
 				});
-				const savedCode = document.getText()
-				if(code != savedCode) {
-					const writeData = Buffer.from(code, 'utf8')
-					var tmp = require("tmp")
-					var tmpFilePath = tmp.tmpNameSync({ postfix: ext });
-					const sampleFileUri = vscode.Uri.file(tmpFilePath)
-					vscode.workspace.fs.writeFile(sampleFileUri, writeData)
-					const choice = await vscode.window.showInformationMessage(
-						`Your code appears to have a conflict with ${username}'s recently saved version of this file. Would you like to view the conflicts?`,
-						"Yes",
-						"Cancel"
-					);
-					if (choice === "Yes") {
-						vscode.commands.executeCommand("vscode.diff", sampleFileUri, document.uri, `Difference between ${username}'s and your version`)
-					}
-				} else {
-					console.log("code was same")
-				}
-				socket.emit('save', {username: "sheldor1510", relativePath, savedCode})
+				
+				var savedCode = document.getText()
+				socket.emit('save', {username: "sheldor1510", relativePath, code: savedCode})
 				console.log('save event socket message sent')
+
+				for(let i=0; i<conflicts.length;i++) {
+					var code = conflicts[i].code
+					var username = conflicts[i].username
+					if(code != savedCode) {
+						const writeData = Buffer.from(code, 'utf8')
+						var tmp = require("tmp")
+						var tmpFilePath = tmp.tmpNameSync({ postfix: ext });
+						const sampleFileUri = vscode.Uri.file(tmpFilePath)
+						vscode.workspace.fs.writeFile(sampleFileUri, writeData)
+						const choice = await vscode.window.showInformationMessage(
+							`Your code appears to have a conflict with ${username}'s recently saved version of this file. Would you like to view the conflicts?`,
+							"Yes",
+							"Cancel"
+						);
+						if (choice === "Yes") {
+							vscode.commands.executeCommand("vscode.diff", sampleFileUri, document.uri, `Difference between ${username}'s and your version`)
+						}
+					} else {
+						console.log("code was same")
+					}
+				}
 			}
 		})
 	)
