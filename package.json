@@ -37,9 +37,9 @@
     },
     "commands": [
       {
-        "command": "codiff.helloWorld",
+        "command": "codiff.clearGlobalStorage",
         "category": "CoDiff",
-        "title": "Hello World"
+        "title": "Clear global storage"
       }
     ]
   },
