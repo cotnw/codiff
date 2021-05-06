@@ -6,14 +6,7 @@ const io = require("socket.io-client");
 
 export async function activate(context: vscode.ExtensionContext) {
 	Util.context = context;
-	
-	if (!Util.isLoggedIn()) {
-		console.log("it isnt logged in")
-	} else {
-		console.log("it is logged in")
-		console.log(Util.getAccessToken())
-	}
-	
+
 	console.log('codiff is now active!');
 	const socket = io.connect(apiBaseUrl);
 	console.log('socket initialized');
