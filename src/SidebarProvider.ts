@@ -85,7 +85,7 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             <h1>CoDiff</h1>
             <p>tagline for codiff</p>
             <br>
-            <button id="authButton">login with GitHub</button>
+            <button id="authButton">Login with GitHub</button>
         </div>
         <div id="postAuth">
             <img class="pfp" id="pfp" src=""/>

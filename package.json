@@ -40,6 +40,11 @@
         "command": "codiff.clearGlobalStorage",
         "category": "CoDiff",
         "title": "Clear global storage"
+      },
+      {
+        "command": "codiff.start",
+        "category": "CoDiff",
+        "title": "Start conflict detection for the current branch and repository"
       }
     ]
   },
