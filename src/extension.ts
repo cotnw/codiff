@@ -174,6 +174,16 @@ export async function activate(context: vscode.ExtensionContext) {
 		})
 	)
 	
+	context.subscriptions.push(
+		vscode.commands.registerCommand('codiff.stop', async () => {
+			var codiffGlobals: {[key: string] : any} = Util.getcodiffGlobals()
+			var room_id = codiffGlobals['room_id']
+			socket.emit('leave', { accessToken: Util.getAccessToken(), roomID: room_id })
+			const repoName = codiffGlobals['git_repo_url'].split('github.com/')[1]
+			vscode.window.showInformationMessage(`Conflict detection has stopped for ${codiffGlobals['branch']} branch of ${repoName}.`)
+		})
+	)
+
 	socket.on('push', async (message: { username: string }) => {
 		const codiffGlobals = {
 			extension_status: "inactive",

@@ -38,8 +38,12 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "stopConflictDetection": {
-          vscode.window.showInformationMessage("hello, this endpoint doesn't exist yet")
+          vscode.commands.executeCommand('codiff.stop')
           break;
+        }
+        case "refresh": {
+          vscode.commands.executeCommand("codiff.refresh");
+          break
         }
       }
     });

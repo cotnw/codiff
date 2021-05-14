@@ -24,6 +24,7 @@ document.addEventListener('DOMContentLoaded', function () {
             const user = await result.json()
             document.getElementById("pfp").src = "https://github.com/"+user.login+".png";
             document.getElementById("usernameHeader").innerHTML = user.login
+            tsvscode.postMessage({ type: 'refresh' });
         })
         .catch(error => console.log('error', error));
     }
@@ -45,6 +46,8 @@ document.addEventListener("click", function (e) {
     if(e.target.id == "stopButton") {
         console.log("stop")
         tsvscode.postMessage({ type: 'stopConflictDetection' })
+        document.getElementById('startButtonArea').style.display = 'block'
+        document.getElementById('more').style.display = 'none'
     }
 })
 
