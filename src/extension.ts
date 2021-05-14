@@ -229,7 +229,86 @@ export async function activate(context: vscode.ExtensionContext) {
 	})
 
 	context.subscriptions.push(	
-		vscode.workspace.onDidChangeTextDocument(async (e) => {
+		vscode.window.onDidChangeActiveTextEditor(async (e) => {
+			var codiffGlobals: {[key: string] : any} = Util.getcodiffGlobals()
+			var extensionStatus = codiffGlobals['extension_status']
+			if(extensionStatus == "active") {
+				const git = await getGit();
+				if (git?.repositories.length) {
+					let gitObject:{[key: string]: any} = {}
+					if(git.repositories.find((repo) => repo.ui.selected)?.state == undefined) {
+						let repoUrl = git.repositories[0].state.remotes[0].fetchUrl
+						if (repoUrl) { 
+							repoUrl = repoUrl.replace('git@', 'https://').replace('.git', '')
+						}
+						const localRepoURL = repoUrl
+						const localBranchName = git.repositories[0].state.HEAD?.name
+						const localRevisionID =  git.repositories[0].state.HEAD?.commit
+						gitObject['git_repo_url'] =  localRepoURL,
+						gitObject['branch'] = localBranchName,
+						gitObject['revision_id'] = localRevisionID
+					} else {
+						let repoUrl = git.repositories[0].state.remotes[0].fetchUrl
+						if (repoUrl) { 
+							repoUrl = repoUrl.replace('git@', 'https://').replace('.git', '')
+						}
+						const localRepoURL = repoUrl
+						const localBranchName = git.repositories[0].state.HEAD?.name
+						const localRevisionID =  git.repositories[0].state.HEAD?.commit
+						gitObject['git_repo_url'] =  localRepoURL,
+						gitObject['branch'] = localBranchName,
+						gitObject['revision_id'] = localRevisionID
+					}
+					if(gitObject['git_repo_url'] != codiffGlobals['git_repo_url'] || gitObject['branch'] != codiffGlobals['branch']) {
+						vscode.window.showInformationMessage("repo or branch changed")
+						setTimeout(() => {vscode.commands.executeCommand('codiff.start')}, 2000);
+					} else if (gitObject['revision_id'] != codiffGlobals['revision_id']) {
+						vscode.window.showInformationMessage("user has pushed some changes")
+						socket.emit('push', {accessToken: Util.getAccessToken(), roomID: codiffGlobals['room_id'], gitObject: gitObject})
+						axios.post(`${apiBaseUrl}/room/join?access_token=${Util.getAccessToken()}`, gitObject)
+						.then(async function (response) {
+							if(response.data.success) {
+								console.log(response.data)
+								socket.emit('join', {accessToken: Util.getAccessToken(), roomID: response.data.room_id})
+								const codiffGlobals = {
+									git_repo_url: gitObject['git_repo_url'],
+									branch: gitObject['branch'],
+									revision_id: gitObject['revision_id'],
+									extension_status: "active",
+									room_id: response.data.room_id,
+									authenticated: true
+								}
+								await Util.context.globalState.update(codiffGlobalsObjectKey, codiffGlobals);
+								const repoName = gitObject['git_repo_url']?.split('github.com/')[1]
+								vscode.window.showInformationMessage(`Room ID for ${gitObject['branch']} branch of ${repoName} has been updated because the user pushed some changes.`)
+								console.log("Updated codiff globals object:")
+								console.log(Util.getcodiffGlobals())
+								vscode.commands.executeCommand('codiff.refresh')
+							} else {
+								const codiffGlobals = {
+									extension_status: "inactive",
+									authenticated: true
+								}
+								await Util.context.globalState.update(codiffGlobalsObjectKey, codiffGlobals);
+								console.log(response.data.error)
+								vscode.window.showErrorMessage(`Conflict detection stopped. Error: ${response.data.error}`)
+								console.log("Updated codiff globals object:")
+								console.log(Util.getcodiffGlobals())
+							}
+						})
+						.catch(function (error) {
+							console.log(error);
+						});				
+					}
+				} else {
+					console.log("git not initialized")
+				} 
+			}
+		}) 
+	)
+
+	context.subscriptions.push(	
+		vscode.workspace.onDidSaveTextDocument(async (e) => {
 			var codiffGlobals: {[key: string] : any} = Util.getcodiffGlobals()
 			var extensionStatus = codiffGlobals['extension_status']
 			if(extensionStatus == "active") {
