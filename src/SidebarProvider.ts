@@ -29,8 +29,16 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
           break;
         }
         case "logout": {
-          await Util.context.globalState.update(accessTokenKey, "null");
+          await Util.context.globalState.update(accessTokenKey, undefined);
           vscode.commands.executeCommand("workbench.action.reloadWindow");
+          break;
+        }
+        case "startConflictDetection": {
+          vscode.commands.executeCommand('codiff.start');
+          break;
+        }
+        case "stopConflictDetection": {
+          vscode.window.showInformationMessage("hello, this endpoint doesn't exist yet")
           break;
         }
       }
@@ -88,9 +96,15 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
             <button id="authButton">Login with GitHub</button>
         </div>
         <div id="postAuth">
+            <br><br>
             <img class="pfp" id="pfp" src=""/>
             <h1 id="usernameHeader"></h1>
-            <br>
+            <div id="startButtonArea">
+              <br><br>
+              <button id="startButton">start conflict detection</button>
+              <br><br>
+            </div>
+            <span id="more"></span>
             <button id="logoutButton">logout</button>
         </div>
 				<script nonce="${nonce}" src="${scriptUri}"></script>

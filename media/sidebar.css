@@ -13,3 +13,7 @@ body {
     height: 70px;
     width: 70px;
 }
+
+#more p {
+    word-wrap:break-word;
+}

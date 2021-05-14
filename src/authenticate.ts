@@ -1,6 +1,6 @@
 const polka = require('polka');
 import * as vscode from "vscode";
-import { accessTokenKey, apiBaseUrl } from "./constants";
+import { accessTokenKey, apiBaseUrl, codiffGlobalsObjectKey } from "./constants";
 import { Util } from "./util";
 
 export const authenticate = () => {
@@ -18,6 +18,7 @@ export const authenticate = () => {
       return;
     }
 
+    console.log(token)
     await Util.context.globalState.update(accessTokenKey, token);
 
     res.end(`
@@ -51,6 +52,13 @@ export const authenticate = () => {
 
     (app as any).server.close();
     
+    const codiffGlobals = {
+      extension_status: "inactive",
+      authenticated: true
+    }
+    
+    await Util.context.globalState.update(codiffGlobalsObjectKey, codiffGlobals);
+
     vscode.commands.executeCommand("workbench.action.reloadWindow");
   });
 };
