@@ -45,6 +45,8 @@ export async function activate(context: vscode.ExtensionContext) {
 	
 	vscode.commands.executeCommand('codiff.start');
 
+	let shouldTriggerSaveSocketSend = true
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('codiff.start', async () => {
 			var codiffGlobals: {[key: string] : any} = Util.getcodiffGlobals()
@@ -162,12 +164,20 @@ export async function activate(context: vscode.ExtensionContext) {
 			var branch = codiffGlobals['branch']
 			var revision_id = codiffGlobals['revision_id']
 			sidebarProvider._view?.webview.postMessage({
+				type: "refresh",
 				data: {room_id, git_repo_url, branch, revision_id}
 			});
 		}
 		
 	});
 	
+	vscode.commands.registerCommand('codiff.textChange', () => {
+		sidebarProvider._view?.webview.postMessage({
+			type: "textChange",
+			text: "resume conflict detection"
+		})
+	})
+
 	context.subscriptions.push(
 		vscode.commands.registerCommand('codiff.clearGlobalStorage', async () => {
 			await Util.context.globalState.update(saveObjectKey, undefined).then(() => console.log(Util.getSaveObject()));
@@ -186,6 +196,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			await Util.context.globalState.update(codiffGlobalsObjectKey, updatedCodiffGlobals)
 			console.log("Updated codiff globals object:")
 			console.log(Util.getcodiffGlobals())
+			await Util.context.globalState.update(saveObjectKey, undefined).then(() => console.log(Util.getSaveObject()));
 			const repoName = codiffGlobals['git_repo_url'].split('github.com/')[1]
 			vscode.window.showInformationMessage(`Conflict detection has stopped for ${codiffGlobals['branch']} branch of ${repoName}.`)
 		})
@@ -231,6 +242,7 @@ export async function activate(context: vscode.ExtensionContext) {
 			const relativePath = vscode.window.activeTextEditor?.document.fileName.split(rootPath)[1].substring(1)
 			if(message.relativePath == relativePath) {
 				vscode.window.showInformationMessage(`${message.username} just saved this file. Save your version to check for conflicts.`)
+				shouldTriggerSaveSocketSend = false
 			}
 		}
 	})
@@ -267,8 +279,17 @@ export async function activate(context: vscode.ExtensionContext) {
 						gitObject['revision_id'] = localRevisionID
 					}
 					if(gitObject['git_repo_url'] != codiffGlobals['git_repo_url'] || gitObject['branch'] != codiffGlobals['branch']) {
-						vscode.window.showInformationMessage("repo or branch changed")
-						setTimeout(() => {vscode.commands.executeCommand('codiff.start')}, 2000);
+						var oldCodiffGlobals: {[key: string] : any} = Util.getcodiffGlobals()
+						const codiffGlobals = {
+							extension_status: "inactive",
+							authenticated: true
+						}
+						await Util.context.globalState.update(codiffGlobalsObjectKey, codiffGlobals)
+						await Util.context.globalState.update(saveObjectKey, undefined).then(() => console.log(Util.getSaveObject()));
+						vscode.commands.executeCommand("codiff.textChange")
+						const repoName = oldCodiffGlobals['git_repo_url'].split('github.com/')[1]
+						vscode.window.showInformationMessage(`Conflict detection has stopped for ${oldCodiffGlobals['branch']} branch of ${repoName}.`)
+						setTimeout(() => {vscode.commands.executeCommand('codiff.start')}, 2000)
 					} else if (gitObject['revision_id'] != codiffGlobals['revision_id']) {
 						vscode.window.showInformationMessage("user has pushed some changes")
 						socket.emit('push', {accessToken: Util.getAccessToken(), roomID: codiffGlobals['room_id'], gitObject: gitObject})
@@ -346,8 +367,17 @@ export async function activate(context: vscode.ExtensionContext) {
 						gitObject['revision_id'] = localRevisionID
 					}
 					if(gitObject['git_repo_url'] != codiffGlobals['git_repo_url'] || gitObject['branch'] != codiffGlobals['branch']) {
-						vscode.window.showInformationMessage("repo or branch changed")
-						setTimeout(() => {vscode.commands.executeCommand('codiff.start')}, 2000);
+						var oldCodiffGlobals: {[key: string] : any} = Util.getcodiffGlobals()
+						const codiffGlobals = {
+							extension_status: "inactive",
+							authenticated: true
+						}
+						await Util.context.globalState.update(codiffGlobalsObjectKey, codiffGlobals)
+						await Util.context.globalState.update(saveObjectKey, undefined).then(() => console.log(Util.getSaveObject()));
+						vscode.commands.executeCommand("codiff.textChange")
+						const repoName = oldCodiffGlobals['git_repo_url'].split('github.com/')[1]
+						vscode.window.showInformationMessage(`Conflict detection has stopped for ${oldCodiffGlobals['branch']} branch of ${repoName}.`)
+						setTimeout(() => {vscode.commands.executeCommand('codiff.start')}, 2000)
 					} else if (gitObject['revision_id'] != codiffGlobals['revision_id']) {
 						vscode.window.showInformationMessage("user has pushed some changes")
 						socket.emit('push', {accessToken: Util.getAccessToken(), roomID: codiffGlobals['room_id'], gitObject: gitObject})
@@ -420,8 +450,14 @@ export async function activate(context: vscode.ExtensionContext) {
 					});
 					
 					var savedCode = document.getText()
-					socket.emit('save', {relativePath, code: savedCode, roomID: codiffGlobals['room_id'], accessToken: Util.getAccessToken()})
-					console.log('save event socket message sent')
+					if (shouldTriggerSaveSocketSend) {
+						socket.emit('save', {relativePath, code: savedCode, roomID: codiffGlobals['room_id'], accessToken: Util.getAccessToken()})
+						console.log('save event socket message sent')
+					} else {
+						console.log("save event socket message not sent (prevented looping)")
+						shouldTriggerSaveSocketSend = true
+					}
+
 
 					for(let i=0; i<conflicts.length;i++) {
 						var code = conflicts[i].code
@@ -435,29 +471,26 @@ export async function activate(context: vscode.ExtensionContext) {
 							const choice = await vscode.window.showInformationMessage(
 								`Your code appears to have a conflict with ${username}'s recently saved version of this file. Would you like to view the conflicts?`,
 								"Yes",
-								"View later",
-								"Don't show again"
+								"No"
 							);
 							if (choice === "Yes") {
 								vscode.commands.executeCommand("vscode.diff", sampleFileUri, document.uri, `Difference between ${username}'s and your version`)
 							}
-							if(choice === "Don't show again") {
-								var saveObj: {[key: string] : any} = Util.getSaveObject()
-								Object.keys(saveObj).forEach((key: string) => {
-									if(key == relativePath) {
-										const fileSavesArray = saveObj[key]
-										for(let i=0;i < fileSavesArray.length;i++) {
-											if(fileSavesArray[i].username == username) {
-												fileSavesArray.splice(i, 1)
-											}
+							var saveObj: {[key: string] : any} = Util.getSaveObject()
+							Object.keys(saveObj).forEach((key: string) => {
+								if(key == relativePath) {
+									const fileSavesArray = saveObj[key]
+									for(let i=0;i < fileSavesArray.length;i++) {
+										if(fileSavesArray[i].username == username) {
+											fileSavesArray.splice(i, 1)
 										}
 									}
-								});
-								console.log(saveObj)
-								await Util.context.globalState.update(saveObjectKey, saveObj);
-								console.log('updated after dont show again')
-								console.log(Util.getSaveObject())
-							}
+								}
+							});
+							console.log(saveObj)
+							await Util.context.globalState.update(saveObjectKey, saveObj);
+							console.log('updated after showing diff')
+							console.log(Util.getSaveObject())
 						} else {
 							console.log("code was same")
 						}

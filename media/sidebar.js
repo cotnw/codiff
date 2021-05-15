@@ -52,7 +52,14 @@ document.addEventListener("click", function (e) {
 })
 
 window.addEventListener('message', event => {
-    const data = event.data.data; 
-    document.getElementById('startButtonArea').style.display = 'none'
-    document.getElementById('more').innerHTML = `<br><p><b>room_id<br></b>${data.room_id}</p><br><p><b>git_repo_url<br></b>${data.git_repo_url}</p><br><p><b>branch<br></b>${data.branch}</p><br><p><b>revision_id<br></b>${data.revision_id}</p><br><br><button id="stopButton">stop conflict detection</button><br><br><br><br>`
+    if(event.data.type == "refresh") {
+        const data = event.data.data; 
+        document.getElementById('startButtonArea').style.display = 'none'
+        document.getElementById('more').style.display = 'block'
+        document.getElementById('more').innerHTML = `<br><p><b>room_id<br></b>${data.room_id}</p><br><p><b>git_repo_url<br></b>${data.git_repo_url}</p><br><p><b>branch<br></b>${data.branch}</p><br><p><b>revision_id<br></b>${data.revision_id}</p><br><br><button id="stopButton">stop conflict detection</button><br><br><br><br>`
+    } else if (event.data.type == "textChange") {
+        document.getElementById('startButtonArea').style.display = 'block'
+        document.getElementById('more').style.display = 'none'
+        document.getElementById("startButton").innerHTML = event.data.text
+    }
 });
