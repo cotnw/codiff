@@ -291,7 +291,6 @@ export async function activate(context: vscode.ExtensionContext) {
 						vscode.window.showInformationMessage(`Conflict detection has stopped for ${oldCodiffGlobals['branch']} branch of ${repoName}.`)
 						setTimeout(() => {vscode.commands.executeCommand('codiff.start')}, 2000)
 					} else if (gitObject['revision_id'] != codiffGlobals['revision_id']) {
-						vscode.window.showInformationMessage("user has pushed some changes")
 						socket.emit('push', {accessToken: Util.getAccessToken(), roomID: codiffGlobals['room_id'], gitObject: gitObject})
 						axios.post(`${apiBaseUrl}/room/join?access_token=${Util.getAccessToken()}`, gitObject)
 						.then(async function (response) {
