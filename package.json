@@ -1,11 +1,16 @@
 {
   "name": "codiff",
   "displayName": "CoDiff",
-  "description": "",
+  "repository": {
+		"type": "git",
+		"url": "https://github.com/cotnw/codiff"
+	},
+  "description": "Have live access to all your teammates' local changes, get notified when conflicts occur with teammates.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.55.0"
   },
+  "publisher": "cotnw",
   "categories": [
     "Other"
   ],
@@ -74,6 +79,7 @@
     "axios": "^0.21.1",
     "polka": "^0.5.2",
     "socket.io-client": "^4.0.1",
-    "tmp": "^0.2.1"
+    "tmp": "^0.2.1",
+    "utf-8-validate": "^5.0.2"
   }
 }
