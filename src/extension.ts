@@ -6,6 +6,17 @@ import axios from 'axios';
 import { authenticate }  from './authenticate';
 const io = require("socket.io-client");
 
+const giveServerError = async () => {
+	const codiffGlobals = {
+		extension_status: "inactive",
+		authenticated: true
+	}
+	await Util.context.globalState.update(codiffGlobalsObjectKey, codiffGlobals);
+	console.log("Updated codiff globals object:")
+	console.log(Util.getcodiffGlobals())
+	vscode.window.showErrorMessage('Could not connect to server. Please contact administrator')
+}
+
 export async function activate(context: vscode.ExtensionContext) {
 	console.log('CoDiff is now active!');
 
@@ -112,11 +123,13 @@ export async function activate(context: vscode.ExtensionContext) {
 										}
 									})
 									.catch(function (error) {
+										giveServerError()
 										console.log(error);
 									});				
 								} else {console.log(response.status)}
 							})
 							.catch(e => {
+								giveServerError()
 								console.log(e)
 							})	
 						} else {
@@ -324,6 +337,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							}
 						})
 						.catch(function (error) {
+							giveServerError()
 							console.log(error);
 						});				
 					}
@@ -412,6 +426,7 @@ export async function activate(context: vscode.ExtensionContext) {
 							}
 						})
 						.catch(function (error) {
+							giveServerError()
 							console.log(error);
 						});				
 					}
