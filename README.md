@@ -1,70 +1,39 @@
-# codiff README
-
-This is the README for your extension "codiff". After writing up a brief description, we recommend including the following sections.
+# CoDiff
+CoDiff is a VSCode extension that has live access to all your teammates' local changes, greatly improving communication: it notifies you of conflicts with teammates as they occur. Download the extension from [here](https://github.com/cotnw/codiff-api).
 
 ## Features
+- Use your GitHub account to log in.
+- Start conflict detection on any git initialized repository.
+- Get notified when another user saves the same file that you are working on.
+- Whenever you save a particular file you will be notified if you conflict with a previously saved local version.
+- View conflicts between your version and the saved version of one of the collaborators.
+- Receive notification asking you to pull changes if your local version is behind some commits compared to the one on GitHub.
+- Access the sidebar from where you can start conflict detection and view other details regarding the room you are in which includes the room ID, git repo url, branch and revision ID.
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Screenshots
+![](https://media.discordapp.net/attachments/706928005313855620/846836626683330570/unknown.png?width=379&height=90)
 
-For example if there is an image subfolder under your extension project workspace:
+Conflict notification
 
-\!\[feature X\]\(images/feature-x.png\)
+![](https://media.discordapp.net/attachments/706928005313855620/846837133045792776/unknown.png?width=363&height=34)
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+File saving notification
 
-## Requirements
+![](https://media.discordapp.net/attachments/706928005313855620/846837601574060032/unknown.png?width=641&height=350)
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+Viewing conflicts
 
-## Extension Settings
+## Dependencies
+- polka
+- axios
+- socket.io-client
+- tmp
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+## Run it locally
+1. Run `npm i`
+2. Run the extension
 
-For example:
+## Contributing
+We, as developers, want to give you the best possible user experience, and thus we encourage you to open issues on our GitHub repository for any bugs, crashes, or anomalous behavior which you face.
 
-This extension contributes the following settings:
-
-* `myExtension.enable`: enable/disable this extension
-* `myExtension.thing`: set to `blah` to do something
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
------------------------------------------------------------------------------------------------------------
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-**Note:** You can author your README using Visual Studio Code.  Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux)
-* Toggle preview (`Shift+CMD+V` on macOS or `Shift+Ctrl+V` on Windows and Linux)
-* Press `Ctrl+Space` (Windows, Linux) or `Cmd+Space` (macOS) to see a list of Markdown snippets
-
-### For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+API repository is available [here](https://github.com/cotnw/codiff-api).
