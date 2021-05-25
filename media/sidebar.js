@@ -4,8 +4,8 @@ const postAuthDiv = document.getElementById("postAuth");
 
 document.addEventListener('DOMContentLoaded', function () {
     const token = document.getElementById("token").innerHTML
-    console.log("TOKEN", token)
-    if(token == undefined) {
+    console.log("token:", token, "token_length:", token.length)
+    if(token.length == 0) {
         initialDiv.style.display = "block";
     } else {
         initialDiv.style.display = "none";

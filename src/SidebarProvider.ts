@@ -94,8 +94,8 @@ export class SidebarProvider implements vscode.WebviewViewProvider {
       <body>
         <p hidden id="token">${Util.getAccessToken()}</p>
         <div id="initial">
+            <br>
             <h1>CoDiff</h1>
-            <p>tagline for codiff</p>
             <br>
             <button id="authButton">Login with GitHub</button>
         </div>
