@@ -16,7 +16,7 @@
     "Other"
   ],
   "activationEvents": [
-    "*",
+    "onStartupFinished",
     "onView:codiff-sidebar"
   ],
   "main": "./out/extension.js",
